@@ -61,6 +61,12 @@ pipeline {
             }
         }
 
+        stage('Check Docker Credentials') {
+            steps {
+                sh 'echo "Docker User: $DOCKER_HUB_CREDENTIALS_USR"'
+            }
+        }
+
         stage('Push Docker Images') {
             steps {
                 sh "echo ${DOCKER_HUB_CREDENTIALS_PSW} | docker login -u ${DOCKER_HUB_CREDENTIALS_USR} --password-stdin"
