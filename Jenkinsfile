@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    tools {
+        maven 'Maven3'
+    }
+
     environment {
         DOCKER_HUB_CREDENTIALS = credentials('dockerhub-credentials')
         DOCKER_HUB_USERNAME    = 'rks1947'
@@ -10,6 +14,13 @@ pipeline {
     }
 
     stages {
+
+        stage('Verify Tools') {
+            steps {
+                sh 'mvn -v'
+                sh 'docker version'
+            }
+        }
 
         stage('Checkout') {
             steps {
@@ -26,10 +37,18 @@ pipeline {
             }
         }
 
+//        stage('Build Docker Images') {
+//            steps {
+//                sh "docker build -t ${IMAGE_BACKEND}:${IMAGE_TAG} -f docker/backend/Dockerfile ."
+//                sh "docker build -t ${IMAGE_FRONTEND}:${IMAGE_TAG} -f docker/frontend/Dockerfile ."
+//            }
+//        }
+
         stage('Build Docker Images') {
             steps {
-                sh "docker build -t ${IMAGE_BACKEND}:${IMAGE_TAG} -f docker/backend/Dockerfile ."
-                sh "docker build -t ${IMAGE_FRONTEND}:${IMAGE_TAG} -f docker/frontend/Dockerfile ."
+                sh "docker build -t ${IMAGE_BACKEND}:${IMAGE_TAG} -f docker/backend/Dockerfile ./saas-multi-tenant-app"
+
+                sh "docker build -t ${IMAGE_FRONTEND}:${IMAGE_TAG} -f docker/frontend/Dockerfile ./stock-mgmt-saas-ui"
             }
         }
 
