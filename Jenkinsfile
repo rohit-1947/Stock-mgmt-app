@@ -29,6 +29,15 @@ pipeline {
             }
         }
 
+        stage('Debug Workspace') {
+            steps {
+                sh 'pwd'
+                sh 'ls -la'
+                sh 'find . -name pom.xml'
+                sh 'find . -maxdepth 3 -type d'
+            }
+        }
+
         stage('Build Backend') {
             steps {
                 dir('saas-multi-tenant-app') {
