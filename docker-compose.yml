@@ -1,0 +1,98 @@
+services:
+  postgres:
+    image: postgres:17.5
+    #Parameter: Docker image and tag.
+    #Meaning: Use the official PostgreSQL image version 17.5 from Docker Hub.
+    container_name: postgres-saas-db
+    #Parameter: Name of the running container.
+    #Meaning: Instead of a random name, the container will be called saas-db (useful in docker ps, docker logs, etc.).
+    environment:
+      POSTGRES_DB: ${DB_NAME:-saas-app-db}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      PGDATA: /var/lib/postgresql/data/data
+#  POSTGRES_DB: ${DB_NAME:-saas-app-db}
+#  Parameter: Initial database name.
+#  Meaning: Use the value of DB_NAME from environment/.env; if unset, default to saas-app-db. This is the first DB created.
+#  POSTGRES_USER: ${DB_USER:-postgres}
+#  Parameter: Database user name.
+#  Meaning: Use DB_USER if set; otherwise default to postgres. This user owns the DB and is used for connections.
+#  POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+#  Parameter: Password for the POSTGRES_USER.
+#  Meaning: Take DB_PASSWORD if set; fallback to postgres. Never leave this as postgres in production.
+#  PGDATA: /var/lib/postgresql/data/data
+#  Parameter: Data‑directory path inside the container.
+#  Meaning: PostgreSQL stores its data files in /var/lib/postgresql/data/data instead of the default /var/lib/postgresql/data.
+    ports:
+      - "${DB_PORT:-5432}:5432"
+
+#Parameter: Port mapping.
+#Meaning: Publish the container’s port 5432 on the host.
+#  ${DB_PORT:-5432}
+#Parameter: Host port.
+#Meaning: Use DB_PORT if set; otherwise default to 5432.
+#Example: DB_PORT=5433 → 5433:5432 (you connect to localhost:5433).
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/data
+#Parameter: Mount configuration.
+#Left‑side (postgres_data): Docker named volume.
+#Right‑side (/var/lib/postgresql/data/data): path inside the container.
+#Meaning: Persistent storage; all DB files live in volume postgres_data, under the data subfolder.
+
+    networks:
+      - saas-app-network
+    restart: unless-stopped
+
+#Parameter: Docker networks to join.
+#Meaning: Attach this container to the saas-app-network network.
+#  Other services in the compose can reach it as postgres on that network.
+
+  saas-app-api:
+    container_name: saas-app-api
+    image: saas-app/saas-multi-tenant-app:1.0.0
+    ports:
+      - 8080:8080
+    networks:
+      - saas-app-network
+    depends_on:
+      - postgres
+
+  saas-ui:
+    container_name: saas-ui
+    image: saas-app/saas-multi-tenant-app-ui:1.0.0
+    ports:
+      - 4242:80
+    networks:
+      - saas-app-network
+    depends_on:
+      - saas-app-api
+
+  jenkins:
+    image: jenkins/jenkins:lts
+    container_name: jenkins
+    privileged: true
+    user: root
+    ports:
+      - 8081:8080
+      - 50000:50000
+    volumes:
+      - jenkins_data:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - saas-app-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+  jenkins_data:
+    driver: local
+
+networks:
+  saas-app-network:
+    driver: bridge
+
+#Parameter: Restart policy.
+#Meaning: Docker automatically restarts the container after crashes or Docker restarts,
+#  unless you explicitly stop it with docker compose stop or docker stop.
