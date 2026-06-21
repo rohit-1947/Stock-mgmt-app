@@ -68,11 +68,12 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         final CorsConfiguration configuration = new CorsConfiguration();
-//        configuration.setAllowedOrigins(List.of("*")); // Configure properly in production
-        configuration.setAllowedOrigins(List.of(
-                "http://localhost:4242",    // Docker frontend
-                "http://localhost:4200"     // Local dev
-        ));
+        configuration.setAllowedOrigins(List.of("*")); // Configure properly in production
+//        configuration.setAllowedOrigins(List.of(
+//                "http://localhost:4242",    // Docker frontend
+//                "http://localhost:4200",     // Local dev
+//                "http://127.0.0.1:*"        //minikube random frontend url
+//        ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
 //        configuration.setAllowedHeaders(List.of("*"));
         configuration.setExposedHeaders(List.of(
@@ -84,7 +85,7 @@ public class SecurityConfig {
                 "X-Requested-With",
                 "Accept"
         ));
-        configuration.setAllowCredentials(true);
+//        configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
 
         final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
