@@ -23,6 +23,7 @@ export function provideApiConfiguration(rootUrl: string) {
 })
 export class ApiConfiguration {
   // rootUrl: string = '';
-  rootUrl: string = 'http://localhost:8080';
+  rootUrl: string = 'http://127.0.0.1:58753';
+  // rootUrl: string = 'http://localhost:8080';
 }
 
